@@ -1,0 +1,89 @@
+import tkinter as tk
+import time
+import math
+
+root = tk.Tk()
+root.title("Пісочний годинник")
+
+canvas = tk.Canvas(root, width=500, height=400, bg="white")
+canvas.pack()
+
+panel = tk.Frame(root)
+panel.pack(pady=5)
+
+time_entry = tk.Entry(panel, width=10)
+time_entry.pack(side="left", padx=5)
+time_entry.insert(0, "10")
+
+start_button = tk.Button(panel, text="Старт")
+start_button.pack(side="left")
+
+message_label = tk.Label(root, text="Введіть час у секундах")
+message_label.pack()
+
+running = False
+flipping = False
+
+start_time = 0
+total_time = 10
+progress = 0
+
+def start_timer():
+    global running, start_time, progress, angle, total_time
+
+    if running or flipping:
+        return
+
+    try:
+        total_time = float(time_entry.get())
+
+        if total_time <= 0:
+            message_label.config(text="Введіть число більше 0")
+            return
+
+    except ValueError:
+        message_label.config(text="Введіть час числом")
+        return
+
+    angle = 0
+    progress = 0
+    start_time = time.time()
+    running = True
+
+    message_label.config(text="Пісок сиплеться...")
+    animate()
+
+
+def animate():
+    global progress, running
+
+    progress = (time.time() - start_time) / total_time
+
+    if progress >= 1:
+        progress = 1
+        running = False
+        message_label.config(text="Час вийшов! Можна ввести новий час")
+
+    draw_scene()
+
+    if running:
+        root.after(16, animate)
+    else:
+        draw_scene()
+
+
+def start_click():
+    global flipping
+
+    if running or flipping:
+        return
+
+    if progress >= 1:
+        flipping = True
+        message_label.config(text="Годинник перевертається...")
+        flip()
+    else:
+        start_timer()
+
+
+start_button.config(command=start_click)
