@@ -1,0 +1,92 @@
+CX = 250
+CY = 200
+
+angle = 0
+
+def sx(x):
+    return CX + x
+
+
+def sy(y):
+    return CY - y
+
+
+def rotate(x, y):
+    r = math.radians(angle)
+    new_x = x * math.cos(r) - y * math.sin(r)
+    new_y = x * math.sin(r) + y * math.cos(r)
+    return sx(new_x), sy(new_y)
+
+
+def draw_line(points, color, width):
+    coords = []
+
+    for x, y in points:
+        px, py = rotate(x, y)
+        coords.append(px)
+        coords.append(py)
+
+    canvas.create_line(coords, fill=color, width=width)
+
+
+def draw_polygon(points, color):
+    coords = []
+
+    for x, y in points:
+        px, py = rotate(x, y)
+        coords.append(px)
+        coords.append(py)
+
+    canvas.create_polygon(coords, fill=color, outline=color)
+
+
+def draw_hourglass():
+    draw_line([(-100, 100), (100, 100), (0, 0), (-100, 100)], "saddlebrown", 5)
+    draw_line([(-100, -100), (100, -100), (0, 0), (-100, -100)], "saddlebrown", 5)
+
+    draw_line([(-120, 100), (120, 100)], "saddlebrown", 5)
+    draw_line([(-120, -100), (120, -100)], "saddlebrown", 5)
+
+
+def draw_sand():
+    if progress < 1:
+        h = 100 * (1 - progress)
+        draw_polygon([(-h, h), (h, h), (0, 0)], "gold")
+
+    if progress > 0:
+        pile_height = 80 * progress
+        pile_width = 100 * progress
+        draw_polygon(
+            [(-pile_width, -100),
+             (pile_width, -100),
+             (0, -100 + pile_height)],
+            "gold"
+        )
+
+    if 0 < progress < 1 and not flipping:
+        draw_line([(0, 0), (0, -85)], "gold", 2)
+
+
+def draw_scene():
+    canvas.delete("all")
+    draw_hourglass()
+    draw_sand()
+
+
+def flip():
+    global angle, flipping
+
+    angle += 4
+
+    if angle >= 180:
+        angle = 0
+        flipping = False
+        start_timer()
+    else:
+        draw_scene()
+        root.after(16, flip)
+
+
+draw_scene()
+
+root.mainloop()
